@@ -1,0 +1,56 @@
+# A1-legs_V1 (12-DoF biped) sim2sim config
+# Obs layout (47-dim, per step):
+#   [sin, cos,
+#    vx_cmd*lin_vel, vy_cmd*lin_vel, wz_cmd*ang_vel,
+#    (q - default)*dof_pos   * 12,
+#    dq*dof_vel              * 12,
+#    last_action             * 12,
+#    body_ang_vel*ang_vel    * 3,
+#    euler_xyz*quat          * 3]
+#
+# Joint order (matches Isaac Gym DOF order & MJCF): L1..L6, R1..R6
+# (1=hip_pitch, 2=hip_roll, 3=hip_yaw, 4=knee, 5=ankle_pitch, 6=ankle_roll)
+
+policy_path: "${LEGGED_GYM_ROOT_DIR}/logs/A1_ppo/exported/policies/policy_1.pt"
+xml_path:    "${LEGGED_GYM_ROOT_DIR}/resources/robots/A1-legs_V1/mjcf/A1-legs_V1.xml"
+
+simulation_duration: 120.0
+simulation_dt: 0.001
+control_decimation: 20       # matches A1Cfg.control.decimation
+
+num_actions: 12
+num_single_obs: 47
+frame_stack: 15
+cycle_time: 0.64             # A1Cfg.rewards.cycle_time
+action_scale: 0.25           # A1Cfg.control.action_scale
+clip_observations: 18.0
+clip_actions: 18.0
+
+# obs normalization (A1Cfg.normalization.obs_scales)
+lin_vel_scale: 2.0
+ang_vel_scale: 1.0
+dof_pos_scale: 1.0
+dof_vel_scale: 0.05
+quat_scale: 1.0
+
+# PD gains -- from A1Cfg.control.stiffness/damping via substring matching
+# Joint order: L1..L6, R1..R6
+kps: [30.0, 30.0, 30.0, 30.0, 20.0, 20.0,
+      30.0, 30.0, 30.0, 30.0, 20.0, 20.0]
+kds: [1.0,  1.0,  1.0,  1.0,  0.5,  0.5,
+      1.0,  1.0,  1.0,  1.0,  0.5,  0.5]
+
+# torque clipping -- MJCF actuatorfrcrange × A1Cfg.safety.torque_limit (0.85)
+# nominal ±27 / ±7  →  effective ±22.95 / ±5.95
+tau_limit: [22.95, 22.95, 22.95, 22.95, 5.95, 5.95,
+            22.95, 22.95, 22.95, 22.95, 5.95, 5.95]
+
+# default dof pos (A1Cfg.init_state.default_joint_angles, L-first)
+default_angles: [-0.1, 0.0, 0.0, 0.3, -0.2, 0.0,
+                 -0.1, 0.0, 0.0, 0.3, -0.2, 0.0]
+
+# initial command [vx, vy, yaw]
+cmd_init: [0.0, 0.0, 0.0]
+
+# number of sim steps to hold the default pose before handing over to the policy
+warmup_steps: 100

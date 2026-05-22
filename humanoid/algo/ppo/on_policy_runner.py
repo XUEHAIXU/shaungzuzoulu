@@ -30,6 +30,9 @@
 # Copyright (c) 2024 Beijing RobotEra TECHNOLOGY CO.,LTD. All rights reserved.
 
 import os
+import os
+os.environ.setdefault("WANDB_MODE", "disabled")
+
 import time
 import torch
 import wandb
@@ -93,12 +96,6 @@ class OnPolicyRunner:
     def learn(self, num_learning_iterations, init_at_random_ep_len=False):
         # initialize writer
         if self.log_dir is not None and self.writer is None:
-            wandb.init(
-                project="pai_ppo",
-                sync_tensorboard=True,
-                name=self.wandb_run_name,
-                config=self.all_cfg,
-            )
             self.writer = SummaryWriter(log_dir=self.log_dir, flush_secs=10)
         if init_at_random_ep_len:
             self.env.episode_length_buf = torch.randint_like(

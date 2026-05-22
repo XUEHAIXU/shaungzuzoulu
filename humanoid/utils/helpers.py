@@ -159,7 +159,15 @@ def update_cfg_from_args(env_cfg, cfg_train, args):
 
 
 def get_args():
+    # Default GPU for both sim and RL. Override at runtime with --gpu N.
+    DEFAULT_GPU_ID = 0
     custom_parameters = [
+        {
+            "name": "--gpu",
+            "type": int,
+            "default": None,
+            "help": "Single switch: use this GPU id for both sim and RL (overrides --rl_device/--sim_device/--compute_device_id).",
+        },
         {
             "name": "--task",
             "type": str,
@@ -208,7 +216,7 @@ def get_args():
         {
             "name": "--rl_device",
             "type": str,
-            "default": "cuda:0",
+            "default": f"cuda:{DEFAULT_GPU_ID}",
             "help": "Device used by the RL algorithm, (cpu, gpu, cuda:0, cuda:1 etc..)",
         },
         {
@@ -231,6 +239,23 @@ def get_args():
     args = gymutil.parse_arguments(
         description="RL Policy", custom_parameters=custom_parameters
     )
+
+    import sys
+    sim_specified = any(a == "--sim_device" or a.startswith("--sim_device=") for a in sys.argv)
+    rl_specified = any(a == "--rl_device" or a.startswith("--rl_device=") for a in sys.argv)
+
+    # --gpu N: single switch -- force every device to cuda:N
+    if args.gpu is not None:
+        args.compute_device_id = args.gpu
+        args.graphics_device_id = args.gpu
+        args.sim_device_type = "cuda"
+        args.rl_device = f"cuda:{args.gpu}"
+    # If user passed --sim_device but not --rl_device, mirror it onto rl_device
+    elif sim_specified and not rl_specified:
+        if args.sim_device_type == "cuda":
+            args.rl_device = f"cuda:{args.compute_device_id}"
+        else:
+            args.rl_device = args.sim_device_type
 
     # name allignment
     args.sim_device_id = args.compute_device_id

@@ -1,0 +1,160 @@
+<mujoco model="A1-legs_V1">
+  <compiler angle="radian" meshdir="../meshes/" autolimits="true"/>
+  <option timestep="0.001" iterations="50" solver="Newton" gravity="0 0 -9.81" integrator="RK4"/>
+  <size njmax="500" nconmax="100"/>
+
+  <statistic center="0 0 0.3" extent="0.8"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="-130" elevation="-20"/>
+  </visual>
+
+  <default>
+    <geom contype="0" conaffinity="0" condim="3" solref="0.01 0.7" rgba="0.898 0.914 0.925 1"/>
+  </default>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+
+    <mesh name="base"    file="base.STL"/>
+    <mesh name="Link_L0" file="Link_L0.STL"/>
+    <mesh name="Link_L1" file="Link_L1.STL"/>
+    <mesh name="Link_L2" file="Link_L2.STL"/>
+    <mesh name="Link_L3" file="Link_L3.STL"/>
+    <mesh name="Link_L4" file="Link_L4.STL"/>
+    <mesh name="Link_L5" file="Link_L5.STL"/>
+    <mesh name="Link_L6" file="Link_L6.STL"/>
+    <mesh name="link_R0" file="link_R0.STL"/>
+    <mesh name="Link_R1" file="Link_R1.STL"/>
+    <mesh name="Link_R2" file="Link_R2.STL"/>
+    <mesh name="Link_R3" file="Link_R3.STL"/>
+    <mesh name="Link_R4" file="Link_R4.STL"/>
+    <mesh name="Link_R5" file="Link_R5.STL"/>
+    <mesh name="Link_R6" file="Link_R6.STL"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" type="plane" conaffinity="2" size="0 0 0.05" material="groundplane"
+          friction="0.6 0.005 0.0001"/>
+
+    <body name="base" pos="0 0 0.57">
+      <inertial pos="-0.0000381 0 0.0521365" mass="5" fullinertia="0.0308737 0.0308671 0.0515511 0 0.0000022 0"/>
+      <joint name="root" type="free"/>
+      <site name="imu" size="0.01" pos="0 0 0"/>
+
+      <geom type="mesh" mesh="base" contype="0" conaffinity="0"/>
+      <geom name="base_col" size="0.11 0.1 0.1" pos="0 0 0.02" type="box" contype="2" conaffinity="4"/>
+
+      <!-- LEFT leg (Isaac Gym dof indices 0..5) -->
+      <body name="Link_L0" pos="0 0.021 -0.055">
+        <inertial pos="0.0000327 0.0137212 -0.0000126" mass="0.6167957" fullinertia="0.00034 0.000378 0.00033 -0.0000007 0.0000001 -0.0000001"/>
+        <geom type="mesh" mesh="Link_L0" contype="0" conaffinity="0"/>
+        <body name="Link_L1" pos="0 0.04125 0">
+          <joint name="joint_L1" type="hinge" axis="0 1 0" range="-1.04 1.04" actuatorfrcrange="-27 27"/>
+          <inertial pos="-0.0004 0.0845206 0.0000341" mass="0.5664528" fullinertia="0.000504 0.0003046 0.0005954 0.0000154 0.0000001 -0.0000009"/>
+          <geom type="mesh" mesh="Link_L1" contype="0" conaffinity="0"/>
+          <geom size="0.04 0.04" pos="0 0.1 0" quat="0.7071068 0 0.7071068 0" type="cylinder" contype="2" conaffinity="4"/>
+          <body name="Link_L2" pos="0 0.0987 0">
+            <joint name="joint_L2" type="hinge" axis="1 0 0" range="-0.26 1.2" actuatorfrcrange="-27 27"/>
+            <inertial pos="0.0010769 0.0000449 -0.0805026" mass="0.5416733" fullinertia="0.000435 0.0005751 0.0003531 -0.0000001 -0.0000089 0.0000008"/>
+            <geom type="mesh" mesh="Link_L2" contype="0" conaffinity="0"/>
+            <geom size="0.04 0.05" pos="0 0 -0.1" type="cylinder" contype="2" conaffinity="4"/>
+            <body name="Link_L3" pos="-0.0001 0 -0.122">
+              <joint name="joint_L3" type="hinge" axis="0 0 1" range="-0.8 0.8" actuatorfrcrange="-27 27"/>
+              <inertial pos="-0.000003 -0.0014616 -0.0988652" mass="0.546196" fullinertia="0.000392 0.0003121 0.0003305 0 -0.0000001 -0.0000034"/>
+              <geom type="mesh" mesh="Link_L3" contype="0" conaffinity="0"/>
+              <geom size="0.04 0.05" pos="0 0 -0.1" quat="0.7071068 -0.7071068 0 0" type="cylinder" contype="2" conaffinity="4"/>
+              <body name="Link_L4" pos="0 0 -0.1115">
+                <joint name="joint_L4" type="hinge" axis="0 1 0" range="0 1.92" actuatorfrcrange="-27 27"/>
+                <inertial pos="0.000506 0.001373 -0.1427065" mass="0.8364805" fullinertia="0.0004348 0.0004651 0.0003823 0 -0.0000004 -0.00001"/>
+                <geom type="mesh" mesh="Link_L4" contype="0" conaffinity="0"/>
+                <geom size="0.04 0.075" pos="0 0 -0.14" type="cylinder" contype="2" conaffinity="4"/>
+                <body name="Link_L5" pos="0 0 -0.221">
+                  <joint name="joint_L5" type="hinge" axis="0 1 0" range="-0.52 0.52" actuatorfrcrange="-7 7"/>
+                  <inertial pos="0.0532454 -0.0052286 -0.0073092" mass="0.4722905" fullinertia="0.0002507 0.0002753 0.0002594 -0.0000184 -0.0000156 0.0000122"/>
+                  <geom type="mesh" mesh="Link_L5" contype="0" conaffinity="0"/>
+                  <body name="Link_L6" pos="0 0 -0.05">
+                    <joint name="joint_L6" type="hinge" axis="1 0 0" range="-0.52 0.52" actuatorfrcrange="-7 7"/>
+                    <inertial pos="0.0560098 0.0027729 -0.0101757" mass="0.2305293" fullinertia="0.0000732 0.0006805 0.0007484 0.000015 0.0000019 0.0000005"/>
+                    <geom type="mesh" mesh="Link_L6" contype="0" conaffinity="0"/>
+                    <geom name="foot_L_col" size="0.1 0.04 0.01" pos="0.05 0 -0.0035" type="box" contype="2" conaffinity="4"/>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+
+      <!-- RIGHT leg (Isaac Gym dof indices 6..11) -->
+      <body name="link_R0" pos="0 -0.021 -0.055">
+        <inertial pos="0.0000327 -0.0149571 -0.0000126" mass="0.6167952" fullinertia="0.00034 0.000378 0.00033 0.0000007 0.0000001 0.0000001"/>
+        <geom type="mesh" mesh="link_R0" contype="0" conaffinity="0"/>
+        <body name="Link_R1" pos="0 -0.04125 0">
+          <joint name="joint_R1" type="hinge" axis="0 1 0" range="-1.04 1.04" actuatorfrcrange="-27 27"/>
+          <inertial pos="-0.000726 -0.0843146 0.0000344" mass="0.5583165" fullinertia="0.0004993 0.0002961 0.0005869 -0.0000154 0.0000001 0.0000009"/>
+          <geom type="mesh" mesh="Link_R1" contype="0" conaffinity="0"/>
+          <geom size="0.04 0.04" pos="0 -0.1 0" quat="0.5 -0.5 -0.5 0.5" type="cylinder" contype="2" conaffinity="4"/>
+          <body name="Link_R2" pos="0 -0.0987 0">
+            <joint name="joint_R2" type="hinge" axis="1 0 0" range="-1.2 0.26" actuatorfrcrange="-27 27"/>
+            <inertial pos="0.0011951 -0.0000469 -0.0798975" mass="0.5335932" fullinertia="0.0004265 0.0005666 0.0003485 0.0000001 -0.0000089 -0.0000008"/>
+            <geom type="mesh" mesh="Link_R2" contype="0" conaffinity="0"/>
+            <geom size="0.04 0.05" pos="0 0 -0.1" type="cylinder" contype="2" conaffinity="4"/>
+            <body name="Link_R3" pos="0 0 -0.1215">
+              <joint name="joint_R3" type="hinge" axis="0 0 1" range="-0.8 0.8" actuatorfrcrange="-27 27"/>
+              <inertial pos="0.0000034 0.0014619 -0.0993652" mass="0.546196" fullinertia="0.000392 0.0003121 0.0003305 0 0.0000001 0.0000034"/>
+              <geom type="mesh" mesh="Link_R3" contype="0" conaffinity="0"/>
+              <geom size="0.04 0.05" pos="0 0 -0.1" quat="0.7071068 -0.7071068 0 0" type="cylinder" contype="2" conaffinity="4"/>
+              <body name="Link_R4" pos="0 0 -0.112">
+                <joint name="joint_R4" type="hinge" axis="0 1 0" range="0 1.92" actuatorfrcrange="-27 27"/>
+                <inertial pos="-0.0005064 -0.0013735 -0.1427065" mass="0.8364805" fullinertia="0.0004348 0.0004651 0.0003823 0 0.0000004 0.00001"/>
+                <geom type="mesh" mesh="Link_R4" contype="0" conaffinity="0"/>
+                <geom size="0.04 0.075" pos="0 0 -0.14" type="cylinder" contype="2" conaffinity="4"/>
+                <body name="Link_R5" pos="0 0 -0.221">
+                  <joint name="joint_R5" type="hinge" axis="0 1 0" range="-0.52 0.52" actuatorfrcrange="-7 7"/>
+                  <inertial pos="0.0531221 0.0047821 -0.0072577" mass="0.4730242" fullinertia="0.0002513 0.0002759 0.0002597 0.0000187 -0.0000153 -0.0000126"/>
+                  <geom type="mesh" mesh="Link_R5" contype="0" conaffinity="0"/>
+                  <body name="Link_R6" pos="0 0 -0.05">
+                    <joint name="joint_R6" type="hinge" axis="1 0 0" range="-0.52 0.52" actuatorfrcrange="-7 7"/>
+                    <inertial pos="0.0560067 -0.0027777 -0.0101756" mass="0.2305158" fullinertia="0.0000732 0.0006805 0.0007483 -0.000015 0.0000019 -0.0000005"/>
+                    <geom type="mesh" mesh="Link_R6" contype="0" conaffinity="0"/>
+                    <geom name="foot_R_col" size="0.1 0.04 0.01" pos="0.05 0 -0.0035" type="box" contype="2" conaffinity="4"/>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="joint_L1" joint="joint_L1" ctrlrange="-27 27"/>
+    <motor name="joint_L2" joint="joint_L2" ctrlrange="-27 27"/>
+    <motor name="joint_L3" joint="joint_L3" ctrlrange="-27 27"/>
+    <motor name="joint_L4" joint="joint_L4" ctrlrange="-27 27"/>
+    <motor name="joint_L5" joint="joint_L5" ctrlrange="-7 7"/>
+    <motor name="joint_L6" joint="joint_L6" ctrlrange="-7 7"/>
+    <motor name="joint_R1" joint="joint_R1" ctrlrange="-27 27"/>
+    <motor name="joint_R2" joint="joint_R2" ctrlrange="-27 27"/>
+    <motor name="joint_R3" joint="joint_R3" ctrlrange="-27 27"/>
+    <motor name="joint_R4" joint="joint_R4" ctrlrange="-27 27"/>
+    <motor name="joint_R5" joint="joint_R5" ctrlrange="-7 7"/>
+    <motor name="joint_R6" joint="joint_R6" ctrlrange="-7 7"/>
+  </actuator>
+
+  <sensor>
+    <framequat name="orientation"      objtype="site" objname="imu"/>
+    <framepos  name="position"         objtype="site" objname="imu"/>
+    <gyro      name="angular-velocity" site="imu"/>
+    <velocimeter   name="linear-velocity"     site="imu"/>
+    <accelerometer name="linear-acceleration" site="imu"/>
+  </sensor>
+</mujoco>

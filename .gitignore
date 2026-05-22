@@ -1,14 +1,18 @@
 .vscode
-logs/Pai_ppo/Oct*
-logs/Pai_ppo/Nov*
 videos
 wandb
-humanoid/__pycache__
-humanoid/algo/__pycache__
-humanoid/algo/ppo/__pycache__
-humanoid/envs/__pycache__
-humanoid/envs/base/__pycache__
-humanoid/envs/pai/__pycache__
-humanoid/utils/__pycache__
+
+# Python caches
+**/__pycache__/
+*.pyc
+
+# Build / install artifacts
 livelybot_rl_control.egg-info
 pi_rl_control.egg-info/**
+*.egg-info/
+
+# Training logs and checkpoints
+logs/
+nohup.out
+*.pt
+*.onnx

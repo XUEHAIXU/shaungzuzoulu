@@ -1,0 +1,117 @@
+<mujoco model="A1-legs_V1_skeleton">
+  <compiler angle="radian" meshdir="meshes/"/>
+
+  <default>
+    <motor ctrlrange="-1 1" ctrllimited="true"/>
+    <joint actuatorfrclimited="true" type="hinge"/>
+  </default>
+
+  <asset>
+    <mesh name="Link_L0" file="Link_L0.STL"/>
+    <mesh name="Link_L1" file="Link_L1.STL"/>
+    <mesh name="Link_L2" file="Link_L2.STL"/>
+    <mesh name="Link_L3" file="Link_L3.STL"/>
+    <mesh name="Link_L4" file="Link_L4.STL"/>
+    <mesh name="Link_L5" file="Link_L5.STL"/>
+    <mesh name="Link_L6" file="Link_L6.STL"/>
+    <mesh name="Link_R1" file="Link_R1.STL"/>
+    <mesh name="Link_R2" file="Link_R2.STL"/>
+    <mesh name="Link_R3" file="Link_R3.STL"/>
+    <mesh name="Link_R4" file="Link_R4.STL"/>
+    <mesh name="Link_R5" file="Link_R5.STL"/>
+    <mesh name="Link_R6" file="Link_R6.STL"/>
+    <mesh name="base" file="base.STL"/>
+    <mesh name="link_R0" file="link_R0.STL"/>
+  </asset>
+
+  <worldbody>
+    <body name="base">
+      <inertial pos="-0.0000381 0 0.0521365" mass="5" diaginertia="0.0308737 0.0308671 0.0515511"/>
+      <freejoint name="base"/>
+      <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="0.898 0.9137 0.9255 1" type="mesh" mesh="base"/>
+      <body name="Link_L0" pos="0 0.021 -0.055">
+        <inertial pos="0.0000327 0.0137212 -0.0000126" mass="0.6167957" diaginertia="0.00034 0.000378 0.00033"/>
+        <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="0.2 0.2 0.2 1" type="mesh" mesh="Link_L0"/>
+        <body name="Link_L1" pos="0 0.04125 0">
+          <inertial pos="-0.0004 0.0845206 0.0000341" mass="0.5664528" diaginertia="0.000504 0.0003046 0.0005954"/>
+          <joint name="joint_L1" pos="0 0 0" type="hinge" axis="0 1 0" range="-1.04 1.04" actuatorfrcrange="-27 27"/>
+          <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" type="mesh" mesh="Link_L1"/>
+          <body name="Link_L2" pos="0 0.0987 0">
+            <inertial pos="0.0010769 0.0000449 -0.0805026" mass="0.5416733" diaginertia="0.000435 0.0005751 0.0003531"/>
+            <joint name="joint_L2" pos="0 0 0" type="hinge" axis="1 0 0" range="-0.26 1.2" actuatorfrcrange="-27 27"/>
+            <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" type="mesh" mesh="Link_L2"/>
+            <body name="Link_L3" pos="-0.0001 0 -0.122">
+              <inertial pos="-0.000003 -0.0014616 -0.0988652" mass="0.546196" diaginertia="0.000392 0.0003121 0.0003305"/>
+              <joint name="joint_L3" pos="0 0 0" type="hinge" axis="0 0 1" range="-0.8 0.8" actuatorfrcrange="-27 27"/>
+              <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" type="mesh" mesh="Link_L3"/>
+              <body name="Link_L4" pos="0 0 -0.1115">
+                <inertial pos="0.000506 0.001373 -0.1427065" mass="0.8364805" diaginertia="0.0004348 0.0004651 0.0003823"/>
+                <joint name="joint_L4" pos="0 0 0" type="hinge" axis="0 1 0" range="0 1.92" actuatorfrcrange="-27 27"/>
+                <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" type="mesh" mesh="Link_L4"/>
+                <body name="Link_L5" pos="0 0 -0.221">
+                  <inertial pos="0.0532454 -0.0052286 -0.0073092" mass="0.4722905" diaginertia="0.0002507 0.0002753 0.0002594"/>
+                  <joint name="joint_L5" pos="0 0 0" type="hinge" axis="0 1 0" range="-0.52 0.52" actuatorfrcrange="-7 7"/>
+                  <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="0.898 0.9137 0.9255 1" type="mesh" mesh="Link_L5"/>
+                  <body name="Link_L6" pos="0 0 -0.05">
+                    <inertial pos="0.0560098 0.0027729 -0.0101757" mass="0.2305293" diaginertia="0.0000732 0.0006805 0.0007484"/>
+                    <joint name="joint_L6" pos="0 0 0" type="hinge" axis="1 0 0" range="-0.52 0.52" actuatorfrcrange="-7 7"/>
+                    <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="0.898 0.9137 0.9255 1" type="mesh" mesh="Link_L6"/>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="link_R0" pos="0 -0.021 -0.055">
+        <inertial pos="0.0000327 -0.0149571 -0.0000126" mass="0.6167952" diaginertia="0.00034 0.000378 0.00033"/>
+        <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="0.898 0.9137 0.9255 1" type="mesh" mesh="link_R0"/>
+        <body name="Link_R1" pos="0 -0.04125 0">
+          <inertial pos="-0.000726 -0.0843146 0.0000344" mass="0.5583165" diaginertia="0.0004993 0.0002961 0.0005869"/>
+          <joint name="joint_R1" pos="0 0 0" type="hinge" axis="0 1 0" range="-1.04 1.04" actuatorfrcrange="-27 27"/>
+          <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" type="mesh" mesh="Link_R1"/>
+          <body name="Link_R2" pos="0 -0.0987 0">
+            <inertial pos="0.0011951 -0.0000469 -0.0798975" mass="0.5335932" diaginertia="0.0004265 0.0005666 0.0003485"/>
+            <joint name="joint_R2" pos="0 0 0" type="hinge" axis="1 0 0" range="-1.2 0.26" actuatorfrcrange="-27 27"/>
+            <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" type="mesh" mesh="Link_R2"/>
+            <body name="Link_R3" pos="0 0 -0.1215">
+              <inertial pos="0.0000034 0.0014619 -0.0993652" mass="0.546196" diaginertia="0.000392 0.0003121 0.0003305"/>
+              <joint name="joint_R3" pos="0 0 0" type="hinge" axis="0 0 1" range="-0.8 0.8" actuatorfrcrange="-27 27"/>
+              <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" type="mesh" mesh="Link_R3"/>
+              <body name="Link_R4" pos="0 0 -0.112">
+                <inertial pos="-0.0005064 -0.0013735 -0.1427065" mass="0.8364805" diaginertia="0.0004348 0.0004651 0.0003823"/>
+                <joint name="joint_R4" pos="0 0 0" type="hinge" axis="0 1 0" range="0 1.92" actuatorfrcrange="-27 27"/>
+                <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" type="mesh" mesh="Link_R4"/>
+                <body name="Link_R5" pos="0 0 -0.221">
+                  <inertial pos="0.0531221 0.0047821 -0.0072577" mass="0.4730242" diaginertia="0.0002513 0.0002759 0.0002597"/>
+                  <joint name="joint_R5" pos="0 0 0" type="hinge" axis="0 1 0" range="-0.52 0.52" actuatorfrcrange="-7 7"/>
+                  <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="0.898 0.9137 0.9255 1" type="mesh" mesh="Link_R5"/>
+                  <body name="Link_R6" pos="0 0 -0.05">
+                    <inertial pos="0.0560067 -0.0027777 -0.0101756" mass="0.2305158" diaginertia="0.0000732 0.0006805 0.0007483"/>
+                    <joint name="joint_R6" pos="0 0 0" type="hinge" axis="1 0 0" range="-0.52 0.52" actuatorfrcrange="-7 7"/>
+                    <geom pos="0 0 0" contype="0" conaffinity="0" group="1" density="0" rgba="0.898 0.9137 0.9255 1" type="mesh" mesh="Link_R6"/>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="joint_L1" joint="joint_L1"/>
+    <motor name="joint_L2" joint="joint_L2"/>
+    <motor name="joint_L3" joint="joint_L3"/>
+    <motor name="joint_L4" joint="joint_L4"/>
+    <motor name="joint_L5" joint="joint_L5"/>
+    <motor name="joint_L6" joint="joint_L6"/>
+    <motor name="joint_R1" joint="joint_R1"/>
+    <motor name="joint_R2" joint="joint_R2"/>
+    <motor name="joint_R3" joint="joint_R3"/>
+    <motor name="joint_R4" joint="joint_R4"/>
+    <motor name="joint_R5" joint="joint_R5"/>
+    <motor name="joint_R6" joint="joint_R6"/>
+  </actuator>
+</mujoco>
