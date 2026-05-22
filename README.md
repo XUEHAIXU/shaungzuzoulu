@@ -1,185 +1,242 @@
-![sim2sim](https://github.com/HighTorque-Robotics/livelybot_pi_rl_baseline/blob/release_v1.0.0/tinywow_%E9%A3%9E%E4%B9%A620250630-092216_82033498.gif)
+# livelybot_pi_rl_baseline
 
-# Pi_rl_baseline
+基于 NVIDIA Isaac Gym 的双足机器人强化学习基线,内置 PPO 训练流程,并提供从 Isaac Gym 到 MuJoCo 的 sim2sim 部署框架。本仓库支持的任务:
 
-The baseline provided a reinforcement learning environment based on NVIDIA Isaac Gym. For the Pi Humanoid Robots from the HighTorque Robotics , Pi_rl_baseline also includes sim2sim framework from Isaac Gym to Mujoco, enabling users to validate their trained policies in different simulations to ensure policy robustness and generalization capabilities. 
+| 任务名 (`--task`) | 机器人 | 实验目录 (`logs/<...>`) | 说明 |
+|---|---|---|---|
+| `pai_ppo` | Pai 12-DoF | `Pai_ppo` | 默认行走任务 |
+| `a1_ppo` | A1-legs_V1 12-DoF | `A1_ppo` | A1 双足行走 |
+| `a1_jump_ppo` | A1-legs_V1 12-DoF | `A1_jump_ppo` | A1 跳跃 |
 
-## Installation
+下面以 **A1 机器人** 为例,完整走一遍 安装 → 训练 → play 评估 → sim2sim 部署 流程。
 
-1. Use `miniconda` or `anaconda` to create a virtual environment `conda create -n pi_env python=3.8`.
-2. Use `apt` to install nvidia driver `sudo apt install nvidia-driver-525`, the driver version has to be at least 515. Installing higher version is also viable, as the driver is backward compatible. After installation, check the graphic driver's CUDA version using `nvidia-smi` . As shown in the picture, the CUDA version is 12.4, driver version is 550. 
+---
 
-   ![1730344376083](image/README/1730344376083.png)
-3. Install the latest version of `Pytorch` : Visit `Pytorch` website https://pytorch.org/. For `Package `choose `Conda `, for `Compute Platform` choose suitable `CUDA` version. `CUDA` is backward compatible, but not forward compatible software library, so the chosen `CUDA` version needs to be smaller than the computer's installed version. 
+## 1. 环境准备
 
-   ![1730344921405](image/README/1730344921405.png)
+### 1.1 创建训练用 conda 环境(Isaac Gym)
 
-   ```
-   conda install pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia
-   ```
-4. Use `conda` to install numpy `conda install numpy=1.23`.
-5. Install `Isaac Gym`:
-
-   - Visit Nvidia official website, download and install `Isaac Gym Preview 4` `https://developer.nvidia.com/isaac-gym`.
-   - Activate conda environment, then access `isaacgym` repository to install `cd isaacgym/python && pip install -e .`
-   - Run the example python script to test whether the environment is installed successfully: `cd examples && python 1080_balls_of_solitude.py`.
-   - Please read `isaacgym/docs/index.html` to troubleshoot. 
-6. Install this baseline:
-
-   - Clone this repository `git clone https://github.com/HighTorque-Locomotion/pi_rl_baseline.git`.
-   - `cd pi_rl_baseline && pip install -e .`
-
-## Usage Guide
-
-#### Examples
+Isaac Gym 官方需要 Python 3.8 + numpy 1.23,所以训练和 play 用一个独立的 conda 环境。
 
 ```bash
-# Use 4096 environments, and using "v1" as training version to do PPO policy training. 
-# This command will initiate the robot's training task. 
-python scripts/train.py --task=pai_ppo --run_name v1 --headless --num_envs 4096
+# 创建并激活环境
+conda create -n pi_env python=3.8 -y
+conda activate pi_env
 
-# Evaluate the trained policy
-# This command will load "v1" policy for performance evaluation under its environment. 
-# In addition, it will automatically exports a JIT model suitable for deployment purposes.
-python scripts/play.py --task=pai_ppo --run_name v1
+# 安装 PyTorch(CUDA 版本要 ≤ 你显卡驱动支持的版本,执行 nvidia-smi 查看)
+conda install pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia
 
-# Use Mujoco to achieve sim2sim
-python scripts/sim2sim.py --load_model /path/to/logs/Pai_ppo/exported/policies/policy_torch.pt
-
-# Run the trained policy provided by us
-python scripts/sim2sim.py --load_model /path/to/logs/Pai_ppo/exported/policies/policy_example.pt
+# 锁定 numpy 版本
+conda install numpy=1.23
 ```
 
-#### Parameters
+### 1.2 安装 Isaac Gym Preview 4
 
-- **CPU and GPU Usage**: Use CPU to run the simulation, set `--sim_device=cpu` and `--rl_device=cpu` simultaneously. Use specific GPU to run the simulation, set `--sim_device=cuda:{0,1,2...}` and `--rl_device={0,1,2...}` simultaneously. Please note: `CUDA_VISIBLE_DEVICES` is not applicable, and the setting that match `--sim_device` and `--rl_device` is very important. 
-- **Headless Operation**: use `--headless` parameters to run without rendering.
-- **Rendering Control**: during training, press 'v' to open or close rendering. 
-- **Policy Location**: Trained model save to `humanoid/logs/<experiment_name>/<date_time>_<run_name>/model_<iteration>.pt`.
-
-
-#### Command-Line Arguments
-
-Run RL training, please refer to `humanoid/utils/helpers.py`.
-Run sim2sim, please refer to `humanoid/scripts/sim2sim.py`.
-
-
-1. Every environment relies on an `env` file (`legged_robot.py`) and a `config` file (`legged_robot_config.py`). The latter includes two classes: `LeggedRobotCfg` (which includes all environment parameters) and `LeggedRobotCfgPPO` (which includes all training parameters). 
-2. Both `env` and `config` classes use inheritance. 
-3. In `cfg`, a non-zero reward specified in contributes the correspondingly named function to the total reward. 
-4. Must use `task_registry.register(name, EnvClass, EnvConfig, TrainConfig)` to register task. Registration can happen within `envs/__init__.py` or outside the repository. 
-
-## Add a new environment
-
-Basic environment "legged_robot" creates a construct a rough terrain locomotion task. The corresponding configuration does not specify the robot assets (URDF/MJCF) and reward scale. 
-
-1. If you need to add a new environment, please create a new repository under "envs/", and includes configuration file "<your_env>_config.py" within. New configurations should inherit from existing environment configurations. 
-2. If you propose to use a new robot: 
-
-   - Insert corresponding assets into the "resources/" repository. 
-   - In "cfg" files, set the path to the asset, define the body name, default_joint_positions and PD gains. Specify the desired 'train_cfg' and the name of the environment (python class).
-   - In "train_cfg" , set "experiment_name" and "run_name". 
-
-3. If needed, please create your environment in "<your_env>.py". Inherit from an existing environment, overriding required functionality and/or adding your bonus functionality. 
-4. Register your environment in `humanoid/envs/__init__.py` . 
-5. Modify or adjust other parameter in `cfg` or `cfg_train` according to your need. To remove the reward, set its scale to zero. Avoid modifying other environments' parameters!
-6. If you want your new robots/environments to implement sim2sim, you might need to change `humanoid/scripts/sim2sim.py`: 
-
-   - Check the robot joint mapping between MJCF and URDF. 
-   - Change the initial joint positions of the robot according to your trained policy. 
-
-## Acknowledgment
-
-The accomplishment of pi_rl_baseline relied on the resource from the [legged_gym](https://github.com/leggedrobotics/legged_gym) projec
-
-
-# Pi_rl_baseline（Chinese translation）
-该基线工作提供了一个基于 NVIDIA Isaac Gym 的强化学习环境，对 高擎机电的双足机器人 Pi Pi_rl_baseline 还整合了从 Isaac Gym 到 Mujoco 的sim2sim框架，使用户能够在不同的物理模拟中验证训练得到的策略，以确保策略的稳健性和泛化能力。
-
-## 安装
-
-1. 使用 `miniconda` 或 `anaconda` 创建一个虚拟环境 `conda create -n pi_env python=3.8`.
-2. 使用 `apt` 安装nvidia显卡驱动 `sudo apt install nvidia-driver-525`,驱动版本至少为515，因为驱动是向下兼容的，所以也可以安装更高版本的驱动。安装完成后，在命令行中使用命令 `nvidia-smi` 以查看驱动的CUDA版本。可以看到示例图片中的CUDA版本为12.4，驱动版本为550。
-
-   ![1730344376083](image/README/1730344376083.png)
-3. 安装最新版本的 `Pytorch` : 进入 `Pytorch` 官网 https://pytorch.org/ ，`Package `选项选择 `Conda `,`Compute Platform`选择合适的 `CUDA` 版本。`CUDA` 是一个向下兼容，但不向上兼容的软件库，所以所选择的 `CUDA` 版本要小于等于电脑安装的版本。
-
-   ![1730344921405](image/README/1730344921405.png)
-
+1. 在 NVIDIA 官网下载 [Isaac Gym Preview 4](https://developer.nvidia.com/isaac-gym)
+2. 解压后安装:
+   ```bash
+   cd isaacgym/python && pip install -e .
    ```
-   conda install pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvidia
+3. 测试是否安装成功:
+   ```bash
+   cd ../examples && python 1080_balls_of_solitude.py
    ```
-4. 使用 `conda` 安装numpy `conda install numpy=1.23`.
-5. 安装 `Isaac Gym`:
+   如果有图形界面弹出且球体正常滚动,说明 Isaac Gym OK。如有问题,参考 `isaacgym/docs/index.html`。
 
-   - 在Nvidia官网下载并安装 `Isaac Gym Preview 4` `https://developer.nvidia.com/isaac-gym`.
-   - 激活conda环境，并进入 `isaacgym`的包中进行安装 ： `cd isaacgym/python && pip install -e .`
-   - 可以通过运行自带的示例脚本，测试环境安装是否成功： `cd examples && python 1080_balls_of_solitude.py`.
-   - 请参阅 `isaacgym/docs/index.html` 以进行故障排除。
-6. 安装本baseline:
-
-   - 克隆此仓库： `git clone https://github.com/HighTorque-Locomotion/pi_rl_baseline.git`.
-   - `cd pi_rl_baseline && pip install -e .`
-
-## Usage Guide
-
-#### Examples
+### 1.3 安装本仓库
 
 ```bash
-# 使用 4096 个环境，并以“v1”为训练版本进行 PPO policy 训练
-# 该命令将会开始机器人的训练任务.
-python scripts/train.py --task=pai_ppo --run_name v1 --headless --num_envs 4096
-
-# 评估训练好的policy
-# 此命令将会加载“v1”policy以在其环境中进行性能评估。
-# 此外，它还会自动导出适合部署目的的 JIT 模型。
-python scripts/play.py --task=pai_ppo --run_name v1
-
-# 通过使用Mujoco实现sim2sim
-python scripts/sim2sim.py --load_model /path/to/logs/Pai_ppo/exported/policies/policy_torch.pt
-
-# 运行我们提供的训练好的policy
-python scripts/sim2sim.py --load_model /path/to/logs/Pai_ppo/exported/policies/policy_example.pt
+git clone https://github.com/XUEHAIXU/shaungzuzoulu.git
+cd shaungzuzoulu
+pip install -e .
 ```
 
-#### Parameters
+`setup.py` 会一并安装 `wandb`、`tensorboard`、`tqdm`、`opencv-python`、`mujoco>=3.2,<3.3`、`mujoco-python-viewer`、`pyyaml`、`matplotlib`。
 
-- **CPU and GPU Usage**: 使用CPU运行仿真, 同时设置 `--sim_device=cpu` 和 `--rl_device=cpu`. 使用指定GPU运行仿真，同时设置 `--sim_device=cuda:{0,1,2...}` 和 `--rl_device={0,1,2...}`. 请注意，`CUDA_VISIBLE_DEVICES` 不适用，并且匹配 `--sim_device` 和 `--rl_device` 的设置至关重要。
-- **Headless Operation**: 使用 `--headless` 参数用于无渲染运行.
-- **Rendering Control**: 在训练期间按 `v` 键开启或关闭渲染.
-- **Policy Location**: 训练好的模型保存在 `humanoid/logs/<experiment_name>/<date_time>_<run_name>/model_<iteration>.pt`.
+### 1.4 (可选) 创建 MuJoCo sim2sim 用的环境
 
+[humanoid/scripts/sim2sim_a1.py](humanoid/scripts/sim2sim_a1.py) 用的是较新的 MuJoCo viewer API,推荐单独建一个环境跑 sim2sim:
 
-#### Command-Line Arguments
+```bash
+conda create -n mujoco python=3.11 -y
+conda activate mujoco
+pip install "mujoco>=3.5" torch numpy scipy pyyaml
+```
 
-进行RL训练，请参考 `humanoid/utils/helpers.py`.
-进行sim2sim，请参考 `humanoid/scripts/sim2sim.py`.
+> **为什么要拆两个环境?** 训练侧的 Isaac Gym 锁死了 Python 3.8 + numpy 1.23,而新的 mujoco viewer 在 Python 3.11 / numpy 2.x 下更稳。仓库本身在两边都能 `pip install -e .`。
 
+---
 
-1. 每个环境都依赖于一个 `env` 文件（`legged_robot.py`）和一个 `config` 文件（`legged_robot_config.py`）。后者包含两个类：`LeggedRobotCfg`（包含所有环境参数）和 `LeggedRobotCfgPPO`（表示所有训练参数）。
-2. `env` 和 `config` 类都使用继承。
-3. `cfg` 中指定的非零奖励将相应名称的函数贡献给总奖励。
-4. 必须使用 `task_registry.register(name, EnvClass, EnvConfig, TrainConfig)` 注册任务。注册可能发生在 `envs/__init__.py` 内，也可能发生在此存储库之外。
+## 2. 训练 A1(`a1_ppo`)
 
-## Add a new environment
+A1 行走训练任务对应 [humanoid/envs/a1/a1_config.py](humanoid/envs/a1/a1_config.py),`experiment_name = "A1_ppo"`,默认 `run_name = "v1"`。
 
-基础环境“legged_robot”构建了一个崎岖地形运动任务。相应的配置未指定机器人资产（URDF/MJCF）和奖励量表。
+```bash
+conda activate pi_env
 
-1. 如果您需要添加新环境，请在“envs/”目录中创建一个新文件夹，其中包含名为“<your_env>_config.py”的配置文件。新配置应继承自现有环境配置。
-2. 如果提议使用新机器人：
+# 训练:4096 个并行环境,无界面,run 名为 v1
+python humanoid/scripts/train.py --task=a1_ppo --run_name v1 --headless --num_envs 4096
+```
 
-   - 将相应的资产插入“resources/”文件夹中。
-   - 在“cfg”文件中，设置资产的路径，定义主体名称、default_joint_positions 和 PD 增益。指定所需的“train_cfg”和环境的名称（python 类）。
-   - 在“train_cfg”中，设置“experiment_name”和“run_name”。
+训练产物保存到:
 
-3. 如果需要，请在“<your_env>.py”中创建您的环境。从现有环境继承，覆盖所需功能和/或添加您的奖励功能。
-4. 在 `humanoid/envs/__init__.py` 中注册您的环境。
-5. 根据需求修改或调整 `cfg` 或 `cfg_train` 中的其他参数。要删除奖励，请将其比例设置为零。避免修改其他环境的参数！
-6. 如果您想要新的机器人/环境来执行 sim2sim，您可能需要修改 `humanoid/scripts/sim2sim.py`：
+```
+logs/A1_ppo/<日期_时间>_v1/
+├── model_0.pt
+├── model_100.pt
+├── ...
+└── events.out.tfevents...      # TensorBoard 日志
+```
 
-   - 检查 MJCF 和 URDF 之间的机器人关节映射。
-   - 根据您训练的策略更改机器人的初始关节位置。
+实时观察训练曲线:
 
-## Acknowledgment
+```bash
+tensorboard --logdir logs/A1_ppo
+```
 
-pai_rl_baseline 的实现依赖于 [legged_gym](https://github.com/leggedrobotics/legged_gym) 项目的资源。
+训练 A1 跳跃任务:
+
+```bash
+python humanoid/scripts/train.py --task=a1_jump_ppo --run_name v1 --headless --num_envs 4096
+```
+
+### 常用命令行参数
+
+| 参数 | 含义 |
+|---|---|
+| `--task` | 任务名,如 `a1_ppo` / `a1_jump_ppo` / `pai_ppo` |
+| `--run_name` | 这次实验的名字,会拼到日志目录 |
+| `--num_envs` | 并行环境数,显存够建议 4096 |
+| `--headless` | 无界面运行(训练时强烈建议) |
+| `--sim_device` | `cuda:0` / `cuda:1` / `cpu` |
+| `--rl_device` | RL 计算设备,**必须与 `--sim_device` 一致** |
+| `--max_iterations` | 最大迭代步数 |
+| `--seed` | 随机种子 |
+| `--resume` `--load_run` `--checkpoint` | 断点续训 |
+
+完整列表见 [humanoid/utils/helpers.py](humanoid/utils/helpers.py)。
+
+> **注意:** `CUDA_VISIBLE_DEVICES` 在 Isaac Gym 下不生效,必须用 `--sim_device` / `--rl_device` 显式指定。
+
+---
+
+## 3. play —— 评估并导出策略
+
+`play.py` 会加载训练好的策略,在 Isaac Gym 中可视化运行,**同时自动导出 TorchScript (`.pt`) 与 ONNX (`.onnx`)**,供 sim2sim 与真机部署使用。
+
+```bash
+conda activate pi_env
+
+# 评估 a1_ppo / run_name=v1 的最新模型
+python humanoid/scripts/play.py --task=a1_ppo --run_name v1
+```
+
+运行后会:
+
+1. 在 Isaac Gym 里实时渲染若干个 A1 机器人,观察策略效果(无 `--headless` 时弹窗,按 `v` 可关闭/开启渲染)
+2. 把策略导出到:
+   ```
+   logs/A1_ppo/exported/policies/
+   ├── policy_1.pt           # TorchScript,sim2sim_a1.py 默认加载
+   └── policy_1.onnx         # ONNX,真机/C++ 部署
+   ```
+
+### play 常用控制
+
+- 加载特定 checkpoint:`--load_run <子目录名> --checkpoint <iter>`
+- 录视频:在 [humanoid/scripts/play.py](humanoid/scripts/play.py) 顶部把 `RENDER` 设为 `True`,会自动写到 `videos/A1_ppo/`
+
+---
+
+## 4. sim2sim —— 在 MuJoCo 中验证策略
+
+[humanoid/scripts/sim2sim_a1.py](humanoid/scripts/sim2sim_a1.py) 使用 [humanoid/scripts/configs/a1.yaml](humanoid/scripts/configs/a1.yaml) 描述模型路径、PD 增益、obs 归一化等参数,**确保 MuJoCo 侧的观测构造、关节顺序、扭矩裁剪与 Isaac Gym 训练时完全一致**。
+
+### 4.1 准备配置
+
+打开 [humanoid/scripts/configs/a1.yaml](humanoid/scripts/configs/a1.yaml),修改 `policy_path` 指向你刚才 play 导出的 `.pt`:
+
+```yaml
+policy_path: "${LEGGED_GYM_ROOT_DIR}/logs/A1_ppo/exported/policies/policy_1.pt"
+xml_path:    "${LEGGED_GYM_ROOT_DIR}/resources/robots/A1-legs_V1/mjcf/A1-legs_V1.xml"
+```
+
+`${LEGGED_GYM_ROOT_DIR}` 会自动展开为本仓库根目录。
+
+### 4.2 运行 sim2sim
+
+```bash
+conda activate mujoco          # 见 1.4 节
+cd humanoid/scripts
+python sim2sim_a1.py configs/a1.yaml
+```
+
+MuJoCo viewer 弹出后,机器人会先用默认关节角站立 `warmup_steps=100` 步,再切换到策略控制。
+
+### 4.3 键盘控制(在终端窗口生效,不是 viewer 窗口)
+
+| 按键 | 作用 |
+|---|---|
+| `w` / `s` | vx +0.1 / -0.1 |
+| `a` / `d` | yaw +0.1 / -0.1 (左转 / 右转) |
+| `j` / `l` | vy +0.1 / -0.1 (左移 / 右移) |
+| `space` | 速度指令清零 |
+| `r` | 复位机器人状态 |
+
+终端会实时显示当前 `vx / vy / yaw / base_z / step`。
+
+---
+
+## 5. 资源目录速览
+
+```
+shaungzuzoulu/
+├── humanoid/
+│   ├── algo/ppo/                 # PPO 实现 (on_policy_runner.py 等)
+│   ├── envs/
+│   │   ├── base/                 # legged_robot 基类
+│   │   ├── pai/                  # Pai 任务
+│   │   └── a1/                   # ★ A1 任务
+│   │       ├── a1_config.py      # A1Cfg / A1CfgPPO
+│   │       ├── a1_env.py         # A1FreeEnv
+│   │       ├── a1_jump_config.py
+│   │       └── a1_jump_env.py
+│   ├── scripts/
+│   │   ├── train.py              # 训练入口
+│   │   ├── play.py               # 评估 + 导出 .pt/.onnx
+│   │   ├── sim2sim.py            # Pai sim2sim
+│   │   ├── sim2sim_a1.py         # ★ A1 sim2sim
+│   │   └── configs/a1.yaml       # ★ A1 sim2sim 配置
+│   └── utils/                    # 工具类(helpers, task_registry, logger)
+├── resources/robots/
+│   └── A1-legs_V1/               # ★ URDF / MJCF / mesh / textures
+├── logs/                         # 训练输出(已 gitignore)
+└── setup.py
+```
+
+---
+
+## 6. 添加新机器人 / 新任务
+
+1. 在 `humanoid/envs/<your_robot>/` 下新建 `<robot>_config.py` 和 `<robot>_env.py`,从 `LeggedRobotCfg` / `LeggedRobotCfgPPO` 继承
+2. 把 URDF/MJCF/mesh 放到 `resources/robots/<your_robot>/`
+3. 在 [humanoid/envs/__init__.py](humanoid/envs/__init__.py) 用 `task_registry.register(...)` 注册新任务
+4. 想跑 sim2sim 的话,新建 `humanoid/scripts/configs/<your_robot>.yaml`,并参考 `sim2sim_a1.py` 写一个对应脚本(注意 MJCF 与 URDF 之间的关节顺序是否一致)
+
+`cfg` 中所有非零的 `reward_scales` 都会在每一步累加;把某项设为 `0` 即可关闭对应奖励。
+
+---
+
+## 7. 常见问题
+
+- **`ImportError: libpython3.8.so.1.0`** —— 训练环境必须激活 `pi_env`(Python 3.8)。
+- **`numpy.bool` deprecated / numpy 版本错误** —— Isaac Gym 强依赖 numpy 1.23,`conda install numpy=1.23`。
+- **`cudaErrorNoKernelImageForDevice`** —— PyTorch CUDA 版本与显卡驱动不匹配,重装匹配的 PyTorch。
+- **MuJoCo viewer 黑屏** —— 检查显卡驱动 / EGL,或换 `mujoco-python-viewer`。
+- **play 不导出 onnx** —— 检查 [humanoid/scripts/play.py](humanoid/scripts/play.py) 顶部 `EXPORT_POLICY = True`。
+
+---
+
+## Acknowledgments
+
+本仓库基于 [legged_gym](https://github.com/leggedrobotics/legged_gym) 与 HighTorque Robotics 的 [livelybot_pi_rl_baseline](https://github.com/HighTorque-Robotics/livelybot_pi_rl_baseline) 修改而来。
